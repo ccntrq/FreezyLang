@@ -22,11 +22,7 @@
    Dangling Commas are allowed
 -}
 
-module FreezyLang 
-    ( Token
-    , Expr
-    , Value
-    ) where
+module FreezyLang where
 
 -- |Freezy syntax tokens
 data Token
