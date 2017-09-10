@@ -10,6 +10,8 @@
         then "wut"
         else "jay"
 
+    # this is a comment :)
+
     let a = 10
     let name = "peter"
 
@@ -25,17 +27,17 @@
 module FreezyLang where
 
 -- |Freezy syntax tokens
-data Token
+data TokenType
     -- |Identifier
-    = IDENTIFIER String
+    = IDENTIFIER
     -- |Literals
-    | NUMBER Integer | STRING String
+    | NUMBER | STRING
     -- |Booleans
     | TRUE | FALSE
     -- |Conditional branching
     | IF | THEN | ELSE
     -- |Assignment / Function declarations
-    | LET | EQ | FUN
+    | LET | EQUAL | FUN
     -- |Print
     | PRINT
     -- |Math operators
@@ -50,9 +52,19 @@ data Token
     | BANG
     -- |Misc
     | COMMA | SEMICOLON
-    | LPAR | LRPAR | LBRACE | RBRACE
+    | LPAR | RPAR | LBRACE | RBRACE
     -- |Special EOF token
     | EOF
+    -- |Throwaway token for whitespace/comments
+    | WS
+    deriving (Show)
+
+-- | The full token type with additional information
+data Token = Token
+    { t_type :: TokenType
+    , t_lexeme :: String -- ^ The lexeme for literals
+    , t_line :: Int -- ^ the line of the token is tracked for error reporting
+    } deriving (Show)
 
 -- |Freezy Expressions
 data Expr
