@@ -16,8 +16,10 @@ library
   hs-source-dirs:      lib
   exposed-modules:     FreezyLang
                      , FreezyLexer
+                     , FreezyParser
   build-depends:       base >= 4.7 && < 5
                      , mtl == 2.2.1
+                     , monad-loops == 0.4.3
   default-language:    Haskell2010
 
 executable freezy
