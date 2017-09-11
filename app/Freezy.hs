@@ -17,7 +17,6 @@ main = do
 -- | a repl for Freezy using readline
 repl :: IO ()
 repl = do
-    putStr prompt
     input <- readline prompt -- read
     case input of
         Nothing     -> exitSuccess
