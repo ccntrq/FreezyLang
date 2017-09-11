@@ -3,6 +3,7 @@ module Freezy where
 
 import FreezyLexer
 import FreezyParser
+import FreezyEvaluator
 
 import System.Console.Readline
 import System.Exit
@@ -36,6 +37,10 @@ runSource source = do
         (Right tokens, st)-> do
             let parsed = runParser (initParserState tokens) expression
             case parsed of
-                (Right expr, st) -> print expr
+                (Right expr, st) -> do
+                    eval <- runEvaluator globalEnv $ evaluate expr
+                    case eval of
+                      Right res -> print res
+                      Left err -> print err
                 (Left err, st) -> print err
         (Left err, st)-> print err
