@@ -91,7 +91,7 @@ data Expr
     deriving (Show)
 
 -- |Freezy Runtime Values
-data Value
+data FreezyValue
     -- |Unbounded Integers
     = Number Integer
     -- |Strings
@@ -100,3 +100,4 @@ data Value
     | Boolean Bool
     -- |Functions
     | Function [Token] [Expr]
+    deriving (Show)
