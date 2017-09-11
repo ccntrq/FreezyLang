@@ -57,7 +57,7 @@ data TokenType
     | EOF
     -- |Throwaway token for whitespace/comments
     | WS
-    deriving (Show)
+    deriving (Show, Eq)
 
 -- | The full token type with additional information
 data Token = Token
@@ -75,7 +75,7 @@ data Expr
     -- |String and Number Literals
     | Literal Token
     -- |Conditional. Both @then@ and @else@ are mandatory
-    | Cond Expr Expr Expr
+    | IfExpr Expr Expr Expr
     -- |Function Call
     | Call Token [Expr]
     -- |Function Declarations evaluate to a callable instance of them self
@@ -84,8 +84,11 @@ data Expr
     | Let Token Expr
     -- |Constant use
     | Const Token
+    -- |Groupings
+    | Grouping Expr
     -- |evaluates to the printed string
     | Print Expr
+    deriving (Show)
 
 -- |Freezy Runtime Values
 data Value
