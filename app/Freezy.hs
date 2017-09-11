@@ -2,6 +2,7 @@
 module Freezy where
 
 import FreezyLexer
+import FreezyParser
 
 import System.Console.Readline
 import System.Exit
@@ -21,8 +22,20 @@ repl = do
     case input of
         Nothing     -> exitSuccess
         Just "quit" -> exitSuccess
-        Just input' -> do 
+        Just input' -> do
             addHistory input'
-            print $ runLexer initState $ lexIt input' -- print / eval
-            repl -- loop
+            runSource input'
+            repl
   where prompt = "freezy─➤➤➤"
+
+-- | interpret a given source string
+runSource :: String -> IO ()
+runSource source = do
+    let lexed = runLexer initState $ lexIt source
+    case lexed of
+        (Right tokens, st)-> do
+            let parsed = runParser (initParserState tokens) expression
+            case parsed of
+                (Right expr, st) -> print expr
+                (Left err, st) -> print err
+        (Left err, st)-> print err
