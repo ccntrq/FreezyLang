@@ -96,42 +96,11 @@ printExpr = do
         then do
             expr <- expression
             return $ Print expr
-        else fun
-
-fun :: Parser Expr
-fun = do
-    matches <- match [FUN]
-    if matches
-        then do
-            _ <- consume LPAR "Expect opening parentheses"
-            args <- argParser []
-            _ <- consume LBRACE "Expect opening brace"
-            body <- bodyParser []
-            return $ Fun args body
         else call
-  where
-    argParser :: [Token] -> Parser [Token]
-    argParser acc = do
-        matches <- match [IDENTIFIER]
-        if matches
-            then do
-                arg <- previous
-                _ <- match [COMMA] -- optional commas?
-                argParser (acc ++ [arg])
-            else do
-                consume RPAR "Excpect closing parens"
-                return acc
-    bodyParser :: [Expr] -> Parser [Expr]
-    bodyParser acc = do
-        expr <- expression
-        matches <- match [RBRACE]
-        if matches
-            then return (acc ++ [expr])
-            else bodyParser (acc ++ [expr])
 
 call :: Parser Expr
 call = do
-    expr <- primary
+    expr <- fun
     finishCallLoop expr
   where
     finishCallLoop :: Expr -> Parser Expr
@@ -155,6 +124,38 @@ call = do
                  else do
                      consume RPAR "expect closing Parentheses"
                      return $ Call callee (acc ++ [arg])
+
+fun :: Parser Expr
+fun = do
+    matches <- match [FUN]
+    if matches
+        then do
+            _ <- consume LPAR "Expect opening parentheses"
+            args <- argParser []
+            _ <- consume LBRACE "Expect opening brace"
+            body <- bodyParser []
+            return $ Fun args body
+        else primary
+  where
+    argParser :: [Token] -> Parser [Token]
+    argParser acc = do
+        matches <- match [IDENTIFIER]
+        if matches
+            then do
+                arg <- previous
+                _ <- match [COMMA] -- optional commas?
+                argParser (acc ++ [arg])
+            else do
+                consume RPAR "Excpect closing parens"
+                return acc
+    bodyParser :: [Expr] -> Parser [Expr]
+    bodyParser acc = do
+        expr <- expression
+        matches <- match [RBRACE]
+        if matches
+            then return (acc ++ [expr])
+            else bodyParser (acc ++ [expr])
+
 
 primary :: Parser Expr
 primary = do
