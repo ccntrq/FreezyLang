@@ -150,6 +150,8 @@ mkReservedOrIdentToken lexeme xs
   | lexeme == "fun" = mkToken FUN xs
   | lexeme == "let" = mkToken LET xs
   | lexeme == "print" = mkToken PRINT xs
+  | lexeme == "true" = mkToken TRUE xs
+  | lexeme == "false" = mkToken FALSE xs
   | otherwise = mkLitToken IDENTIFIER lexeme xs
 
 
