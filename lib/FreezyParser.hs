@@ -56,7 +56,7 @@ factor = binaryParser unary [STAR, DASH]
 
 unary :: Parser Expr
 unary = do
-    matches <- match [MINUS, DASH]
+    matches <- match [MINUS, BANG]
     if matches
         then do
             op <- previous
