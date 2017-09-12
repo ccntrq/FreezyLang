@@ -96,11 +96,66 @@ printExpr = do
         then do
             expr <- expression
             return $ Print expr
-        else primary
+        else fun
 
+fun :: Parser Expr
+fun = do
+    matches <- match [FUN]
+    if matches
+        then do
+            name <- consume IDENTIFIER "Expect function name"
+            _ <- consume LPAR "Expect opening parentheses"
+            args <- argParser []
+            _ <- consume LBRACE "Expect opening brace"
+            body <- bodyParser []
+            return $ Fun name args body
+        else call
+  where
+    argParser :: [Token] -> Parser [Token]
+    argParser acc = do
+        matches <- match [IDENTIFIER]
+        if matches
+            then do
+                arg <- previous
+                _ <- match [COMMA] -- optional commas?
+                argParser (acc ++ [arg])
+            else do
+                consume RPAR "Excpect closing parens"
+                return acc
+    bodyParser :: [Expr] -> Parser [Expr]
+    bodyParser acc = do
+        expr <- expression
+        matches <- match [RBRACE]
+        if matches
+            then return (acc ++ [expr])
+            else bodyParser (acc ++ [expr])
 
--- funDeclaration :: Parser Expr
--- funCall :: Parser Expr
+call :: Parser Expr
+call = do
+    expr <- primary
+    finishCallLoop expr
+  where
+    finishCallLoop :: Expr -> Parser Expr
+    finishCallLoop expr = do
+        matches <- match [LPAR]
+        if matches
+            then do
+                call <- finishCall [] expr
+                finishCallLoop call
+            else return expr
+    finishCall :: [Expr] -> Expr -> Parser Expr
+    finishCall acc callee = do
+       matches <- match [RPAR]
+       if matches
+           then return $ Call callee acc
+           else do
+             arg <- expression
+             matches' <- match [COMMA]
+             if matches'
+                 then finishCall (acc ++ [arg]) callee
+                 else do
+                     consume RPAR "expect closing Parentheses"
+                     return $ Call callee (acc ++ [arg])
 
 primary :: Parser Expr
 primary = do

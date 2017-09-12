@@ -77,7 +77,7 @@ data Expr
     -- |Conditional. Both @then@ and @else@ are mandatory
     | IfExpr Expr Expr Expr
     -- |Function Call
-    | Call Token [Expr]
+    | Call Expr [Expr]
     -- |Function Declarations evaluate to a callable instance of them self
     | Fun Token [Token] [Expr]
     -- |Constant definition
