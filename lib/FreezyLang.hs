@@ -26,6 +26,8 @@
 
 module FreezyLang where
 
+import qualified Data.Map as M
+
 -- |Freezy syntax tokens
 data TokenType
     -- |Identifier
@@ -90,6 +92,8 @@ data Expr
     | Print Expr
     deriving (Show)
 
+type Env = M.Map String FreezyValue
+
 -- |Freezy Runtime Values
 data FreezyValue
     -- |Unbounded Integers
@@ -99,5 +103,5 @@ data FreezyValue
     -- |Boolean
     | Boolean Bool
     -- |Functions
-    | Function [Token] [Expr]
+    | Function Env [Token] [Expr]
     deriving (Show)
