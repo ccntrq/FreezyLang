@@ -11,7 +11,7 @@ import System.Exit
 -- | The entry point to the interpreter
 main :: IO ()
 main = do
-    print $ "Freezy v0.0.1"
+    print $ "Freezy v0.0.3"
     putStrLn "Welcome to the Freezy repl."
     putStrLn "Enter 'quit' or hit Ctrl+D to leave"
     repl -- enter the repl
