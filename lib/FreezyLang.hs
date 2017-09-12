@@ -78,8 +78,8 @@ data Expr
     | IfExpr Expr Expr Expr
     -- |Function Call
     | Call Expr [Expr]
-    -- |Function Declarations evaluate to a callable instance of them self
-    | Fun Token [Token] [Expr]
+    -- |Lambda Function Declarations evaluate to a callable instance of them self
+    | Fun [Token] [Expr]
     -- |Constant definition
     | Let Token Expr
     -- |Constant use

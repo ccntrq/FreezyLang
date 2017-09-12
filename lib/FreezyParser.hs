@@ -103,12 +103,11 @@ fun = do
     matches <- match [FUN]
     if matches
         then do
-            name <- consume IDENTIFIER "Expect function name"
             _ <- consume LPAR "Expect opening parentheses"
             args <- argParser []
             _ <- consume LBRACE "Expect opening brace"
             body <- bodyParser []
-            return $ Fun name args body
+            return $ Fun args body
         else call
   where
     argParser :: [Token] -> Parser [Token]
