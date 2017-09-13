@@ -165,6 +165,7 @@ primary = do
            advance
            return $ Const cur
        LPAR -> do
+           advance
            expr <- expression
            consume RPAR "Expect closing paren"
            return $ Grouping expr
