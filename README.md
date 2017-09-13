@@ -22,3 +22,12 @@ cabal haddock
 
 Sadly there is a bug with the `--executables` option thus there is no
 documentation for `Freezy.hs` at the moment
+
+## WIP
+
+## v0.1.0
+
+- [x] add let bindings
+- [x] add named functions
+- [ ] implement all operators
+- [ ] silence all warnings
