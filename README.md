@@ -41,12 +41,3 @@ resources that I used while building this:
 ### Other:
 
 - the Haskell Wiki
-
-## WIP
-
-### v0.1.0
-
-- [x] add let bindings
-- [x] add named functions
-- [ ] implement all operators
-- [ ] silence all warnings
