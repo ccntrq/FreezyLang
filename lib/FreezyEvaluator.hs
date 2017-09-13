@@ -17,6 +17,7 @@ import Prelude hiding (lookup)
 globalEnv :: Env
 globalEnv = M.empty
 
+-- | Assignment. This doesn't allow mutation.
 assign :: String -> FreezyValue -> Evaluator FreezyValue
 assign name value = do
     env <- get
@@ -71,11 +72,11 @@ evaluate (Call callee args) = do
     calleeRes <- evaluate callee
     argsRes <- mapM evaluate args
     case calleeRes of
-        (Function env argList body) -> do
-            st <- get
-            put (insertArgs argList argsRes st)
+        (Function closure argList body) -> do
+            env <- get
+            put (insertArgs argList argsRes closure)
             funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
-            put st -- reset the state
+            put env -- reset the env
             return funRes
         _ -> throwError $ EvaluatorError "can only call functions" 0
 evaluate (Let token expr) = evaluate expr >>= (assign (t_lexeme token))

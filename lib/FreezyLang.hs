@@ -6,11 +6,14 @@
         a + b
     }
 
+    # this is a comment :)
+
+    let a = fn (a,b){a+b}(1,4)
+    print a # prints 5
+
     if plus( 2, 5) > 7
         then "wut"
         else "jay"
-
-    # this is a comment :)
 
     let a = 10
     let name = "peter"
@@ -92,6 +95,16 @@ data Expr
     | Print Expr
     deriving (Show)
 
+-- | A FreezyProgram is just a list of Expressions. This is
+--
+--   * the output of the main parsing routine
+--
+--   * the input to the main interpreter
+type Program = [Expr]
+
+-- | a simple Environment for the Evaluator.
+--
+--   * this goes here because we store a closure (Env) in Function Values.
 type Env = M.Map String FreezyValue
 
 -- |Freezy Runtime Values
