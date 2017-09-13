@@ -17,6 +17,15 @@ import Prelude hiding (lookup)
 globalEnv :: Env
 globalEnv = M.empty
 
+assign :: String -> FreezyValue -> Evaluator FreezyValue
+assign name value = do
+    env <- get
+    case M.lookup name env of
+          Just _ -> throwError $ EvaluatorError ("already assigned" ++ name) 0
+          Nothing -> do
+              put $ M.insert name value env
+              return value
+
 lookup :: String -> Evaluator FreezyValue
 lookup name = do
     env <- get
@@ -69,6 +78,7 @@ evaluate (Call callee args) = do
             put st -- reset the state
             return funRes
         _ -> throwError $ EvaluatorError "can only call functions" 0
+evaluate (Let token expr) = evaluate expr >>= (assign (t_lexeme token))
 evaluate (Const token) = lookup (t_lexeme token)
 evaluate (Grouping expr) = evaluate expr
 evaluate (Print expr) = do
@@ -90,9 +100,8 @@ insertArgs :: [Token] -> [FreezyValue] -> Env -> Env
 insertArgs argList args env =
     let zipped = zip argList args
     in foldl insertFn env zipped
+  -- don't use assign here. it will break the whaky shadowing
   where insertFn acc (k, v) = M.insert (t_lexeme k) v acc
-
-
 
 -- | Stringifications for FreezyValues. Currently this just wraps 'show'
 stringify :: FreezyValue -> String
