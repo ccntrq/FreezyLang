@@ -41,8 +41,8 @@ data TokenType
     | TRUE | FALSE
     -- |Conditional branching
     | IF | THEN | ELSE
-    -- |Assignment / Function declarations
-    | LET | EQUAL | FUN
+    -- |Assignment / Function declarations / Lambdas
+    | LET | EQUAL | FUN | FN
     -- |Print
     | PRINT
     -- |Math operators
@@ -83,8 +83,10 @@ data Expr
     | IfExpr Expr Expr Expr
     -- |Function Call
     | Call Expr [Expr]
-    -- |Lambda Function Declarations evaluate to a callable instance of them self
-    | Fun [Token] [Expr]
+    -- |Lambdas
+    | Fn [Token] [Expr]
+    -- | Function Declarations evaluate to a callable instance of them self
+    | Fun Token [Token] [Expr]
     -- |Constant definition
     | Let Token Expr
     -- |Constant use

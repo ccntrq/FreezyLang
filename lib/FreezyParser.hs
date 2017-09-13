@@ -144,12 +144,13 @@ fun = do
     matches <- match [FUN]
     if matches
         then do
+            name <- consume IDENTIFIER "Expect Function name. Use fn instead"
             _ <- consume LPAR "Expect opening parentheses"
             args <- argParser []
             _ <- consume LBRACE "Expect opening brace"
             body <- bodyParser []
-            return $ Fun args body
-        else primary
+            return $ Fun name args body
+        else fn
   where
     argParser :: [Token] -> Parser [Token]
     argParser acc = do
@@ -170,6 +171,37 @@ fun = do
             then return (acc ++ [expr])
             else bodyParser (acc ++ [expr])
 
+-- XXX duplicate code from fun
+fn :: Parser Expr
+fn = do
+    matches <- match [FN]
+    if matches
+        then do
+            _ <- consume LPAR "Expect opening parentheses"
+            args <- argParser []
+            _ <- consume LBRACE "Expect opening brace"
+            body <- bodyParser []
+            return $ Fn args body
+        else primary
+  where
+    argParser :: [Token] -> Parser [Token]
+    argParser acc = do
+        matches <- match [IDENTIFIER]
+        if matches
+            then do
+                arg <- previous
+                _ <- match [COMMA] -- optional commas?
+                argParser (acc ++ [arg])
+            else do
+                consume RPAR "Excpect closing parens"
+                return acc
+    bodyParser :: [Expr] -> Parser [Expr]
+    bodyParser acc = do
+        expr <- expression
+        matches <- match [RBRACE]
+        if matches
+            then return (acc ++ [expr])
+            else bodyParser (acc ++ [expr])
 
 primary :: Parser Expr
 primary = do

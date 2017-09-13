@@ -148,6 +148,7 @@ mkReservedOrIdentToken lexeme xs
   | lexeme == "then" = mkToken THEN xs
   | lexeme == "else" = mkToken ELSE xs
   | lexeme == "fun" = mkToken FUN xs
+  | lexeme == "fn" = mkToken FN xs
   | lexeme == "let" = mkToken LET xs
   | lexeme == "print" = mkToken PRINT xs
   | lexeme == "true" = mkToken TRUE xs
