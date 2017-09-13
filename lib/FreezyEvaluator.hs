@@ -4,7 +4,7 @@ module FreezyEvaluator where
 import FreezyLang
 
 import Control.Monad.Except
-import Control.Monad.Reader
+import Control.Monad.State
 
 import qualified Data.Map as M
 import Prelude hiding (lookup)
@@ -19,7 +19,7 @@ globalEnv = M.empty
 
 lookup :: String -> Evaluator FreezyValue
 lookup name = do
-    env <- ask
+    env <- get
     case M.lookup name env of
           Just x -> return x
           Nothing -> throwError $ EvaluatorError ("Cannot find in env: " ++ name) 0
@@ -27,11 +27,11 @@ lookup name = do
 {- ** Evaluator Stack -}
 
 -- | Evaluator Monad
-type Evaluator a = ReaderT Env (ExceptT EvaluatorError IO) a
+type Evaluator a = StateT Env (ExceptT EvaluatorError IO) a
 
 -- | Unwrapping of the monad stack
-runEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError a)
-runEvaluator env ev = runExceptT $ runReaderT ev env
+runEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError (a, Env))
+runEvaluator env ev = runExceptT $ runStateT ev env
 
 -- | Type for Evaluator errors
 data EvaluatorError = EvaluatorError
@@ -56,14 +56,18 @@ evaluate (IfExpr condE thenE elseE) = do
         then evaluate thenE
         else evaluate elseE
 evaluate (Fun args body) = do
-    env <- ask -- closure?
+    env <- get  -- closure?
     return $ Function env args body
 evaluate (Call callee args) = do
     calleeRes <- evaluate callee
     argsRes <- mapM evaluate args
     case calleeRes of
-        (Function env argList body) ->
-            local (insertArgs argList argsRes) (evaluateBody calleeRes body) -- urgh... we shouldn't pass the calleeRes here
+        (Function env argList body) -> do
+            st <- get
+            put (insertArgs argList argsRes st)
+            funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
+            put st -- reset the state
+            return funRes
         _ -> throwError $ EvaluatorError "can only call functions" 0
 evaluate (Const token) = lookup (t_lexeme token)
 evaluate (Grouping expr) = evaluate expr
