@@ -35,6 +35,20 @@ data ParserError = ParserError
 
 {- * Main Parser Logic -}
 
+-- | Parser expression until it errors out or reaches EOF
+parseIt :: Parser Program
+parseIt = parseIt' []
+  where
+    parseIt' acc = do
+        eof <- isAtEnd
+        if eof
+            then return acc
+            else do
+                expr <- expression
+                _ <- match [SEMICOLON] -- optional semicolon
+                st <- get
+                parseIt' $ acc ++ [expr]
+
 -- | Entry point to the recursive descent expression parser
 expression :: Parser Expr
 expression = concatenation

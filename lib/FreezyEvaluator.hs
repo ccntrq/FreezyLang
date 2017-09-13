@@ -51,6 +51,9 @@ data EvaluatorError = EvaluatorError
 
 {- * Evalution Logic -}
 
+evaluateIt :: Program -> Evaluator ()
+evaluateIt = mapM_ evaluate
+
 evaluate :: Expr -> Evaluator FreezyValue
 evaluate (Unary op operand) = do
     operandRes <- evaluate operand
