@@ -58,7 +58,7 @@ repl = do
             addHistory input'
             runSource input'
             repl
-  where prompt = "freezy─➤➤➤"
+  where prompt = "─➤➤➤"
 
 {- * execFile -}
 
