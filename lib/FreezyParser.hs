@@ -215,7 +215,7 @@ binaryParser next ops = do
         if matches
             then do
                 op <- previous
-                right <- expression
+                right <- next
                 loop $ Binary left op right
             else return left
 
