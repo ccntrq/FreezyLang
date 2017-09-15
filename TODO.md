@@ -11,8 +11,8 @@
 - [x] implement real shadowing (currently only function args can shadow)
 - [x] add blocks
    - [x] add block scope
+- [x] silence all warnings
 - [ ] improve error reporting
-- [ ] silence all warnings
 
 ## v0.x.0
 
