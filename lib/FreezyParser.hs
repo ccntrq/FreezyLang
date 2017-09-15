@@ -248,7 +248,9 @@ advance :: Parser Token
 advance = do
     atEnd <- isAtEnd
     if atEnd
-        then throwError $ ParserError "Unexpected End of Input"  0 -- EOF line XXX
+        then do
+             eof <- peek
+             throwError $ ParserError "Unexpected End of Input"  (t_line eof)
         else do
             st <- get
             put st { tokens = tail $ tokens st
@@ -283,7 +285,9 @@ consume ttype errMsg = do
     matches <- check ttype
     if matches
         then advance
-        else throwError $ ParserError errMsg 0 -- XXX
+        else do
+            errT <- peek
+            throwError $ ParserError (errMsg ++ " where: " ++ show ttype) (t_line errT)
 
 -- | returns the current token
 peek :: Parser Token
@@ -291,7 +295,9 @@ peek = do
     st <- get
     case tokens st of
         (x:xs) -> return x
-        _ -> throwError $ ParserError "Out of tokens" 0 -- XXX
+        _ -> do
+            prev <- previous
+            throwError $ ParserError "Out of tokens" (t_line prev)
 
 -- | returns the previous token
 previous :: Parser Token
@@ -299,4 +305,4 @@ previous = do
     st <- get
     case previousTokens st of
         (x:xs) -> return x
-        _ -> throwError $ ParserError "No previous token" 0 -- XXX
+        _ -> throwError $ ParserError "No previous token" 0
