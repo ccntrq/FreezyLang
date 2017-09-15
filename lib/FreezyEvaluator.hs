@@ -114,7 +114,12 @@ evaluate (Call callee args) = do
 evaluate (Let token expr) = evaluate expr >>= (assign (t_lexeme token))
 evaluate (Const token) = lookup (t_lexeme token)
 evaluate (Grouping expr) = evaluate expr
-evaluate (Block exprs) = evaluateBlock Nothing exprs
+evaluate (Block exprs) = do
+    env <- get
+    put (openScope env)
+    res <- evaluateBlock Nothing exprs
+    put env
+    return res
 evaluate (Print expr) = do
     res <- evaluate expr
     let stringified = stringify res
