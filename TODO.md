@@ -8,7 +8,8 @@
 - [x] Documentation for Freezy
   - [x] move to lib (renamed to FreezyMain
   - [x] add stupid main wrapper
-- [ ] implement real shadowing (currently only function args can shadow)
+- [x] implement real shadowing (currently only function args can shadow)
+- [ ] add blocks
 - [ ] improve error reporting
 - [ ] silence all warnings
 
