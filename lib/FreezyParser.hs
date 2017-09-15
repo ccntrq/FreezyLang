@@ -50,24 +50,32 @@ parseIt = parseIt' []
                 parseIt' $ acc ++ [expr]
 
 -- | Entry point to the recursive descent expression parser
+--   We go from lowest precedence up to the highest
 expression :: Parser Expr
 expression = concatenation
 
+-- | Parse a concatenation operation
+--   This is the lowest precedence operation in Freezy
 concatenation :: Parser Expr
 concatenation = binaryParser equality [TILDE]
 
+-- | Equality Check Parser
 equality :: Parser Expr
 equality = binaryParser comparison [BANG_EQ, EQ_EQ]
 
+-- | Comparison Parser
 comparison :: Parser Expr
 comparison = binaryParser term [GR_EQ, LE_EQ, GR, LE]
 
+-- | Term Parser
 term :: Parser Expr
 term = binaryParser factor [PLUS, MINUS]
 
+-- | Factor Parser
 factor :: Parser Expr
 factor = binaryParser unary [STAR, DASH]
 
+-- | Unary Operation Parser
 unary :: Parser Expr
 unary = do
     matches <- match [MINUS, BANG]
@@ -79,6 +87,9 @@ unary = do
         else
             ifExpr
 
+-- | Parses an if Expr
+--   If is an Expr in Freezy meaning that both a then expr and a else expr is
+--   mandatory
 ifExpr :: Parser Expr
 ifExpr = do
     matches <- match [IF]
@@ -92,6 +103,7 @@ ifExpr = do
             return $ IfExpr cond thenExpr elseExpr
         else assignment
 
+-- | Parses a 'let' assignment
 assignment :: Parser Expr
 assignment = do
     matches <- match [LET]
@@ -103,6 +115,7 @@ assignment = do
             return $ Let name val
         else printExpr
 
+-- | Parses a print expr. print returns the stringified value
 printExpr :: Parser Expr
 printExpr = do
     matches <- match [PRINT]
@@ -112,6 +125,10 @@ printExpr = do
             return $ Print expr
         else call
 
+-- | Parses a call expr. In Freezy you can call either:
+--
+--   * a Lambda
+--   * or a named Function
 call :: Parser Expr
 call = do
     expr <- fun
@@ -139,6 +156,7 @@ call = do
                      _ <- consume RPAR "expect closing Parentheses"
                      return $ Call callee (acc ++ [arg])
 
+-- | Parse a named function declaration
 fun :: Parser Expr
 fun = do
     matches <- match [FUN]
@@ -148,6 +166,7 @@ fun = do
             finishFn (Just name)
         else fn
 
+-- | Parse a lambda function declaration
 fn :: Parser Expr
 fn = do
     matches <- match [FN]
@@ -155,6 +174,7 @@ fn = do
         then finishFn Nothing
         else primary
 
+-- | Shared code for fun and fn parser
 finishFn :: Maybe Token -> Parser Expr
 finishFn name = do
     _ <- consume LPAR "Expect opening parentheses"
@@ -184,6 +204,12 @@ finishFn name = do
             then return (acc ++ [expr])
             else bodyParser (acc ++ [expr])
 
+-- | Parse primary expressions:
+--
+--   * Identifiers
+--   * Groupings
+--   * Blocks
+--   * and Literals
 primary :: Parser Expr
 primary = do
    cur <- peek
@@ -208,6 +234,7 @@ primary = do
   where
     isLitToken cur = t_type cur `elem` [TRUE, FALSE, STRING, NUMBER]
 
+-- | Helper to finish parsing a block
 block :: [Expr] -> Parser Expr
 block acc = do
     matches <- match [RBRACE]

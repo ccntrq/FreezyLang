@@ -62,6 +62,7 @@ repl = do
 
 {- * execFile -}
 
+-- | read a Freezy source file and execute it
 execFile :: String -> IO ()
 execFile name = do
     source <- readFile name

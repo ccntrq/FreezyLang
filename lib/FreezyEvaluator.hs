@@ -33,6 +33,11 @@ assign name value = do
             put $ env { scope = M.insert name value (scope env)}
             return value
 
+-- | Lookup a variable in the environment. This does
+--
+--   (1) first check the current scope and return a result if found
+--   (2) get the enclosing scope and repeat with step one or
+--   (3) error out if the variable cannot be found and we reached the root scope
 lookup :: String -> Evaluator FreezyValue
 lookup name = do
     env <- get
@@ -56,6 +61,7 @@ type Evaluator a = StateT Env (ExceptT EvaluatorError IO) a
 runEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError (a, Env))
 runEvaluator env ev = runExceptT $ runStateT ev env
 
+-- | Unwrap the monad stack while discarding the state
 evalEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError a)
 evalEvaluator env ev = runExceptT $ evalStateT ev env
 
@@ -67,9 +73,11 @@ data EvaluatorError = EvaluatorError
 
 {- * Evalution Logic -}
 
+-- | Evalauates a FreezyProgram
 evaluateIt :: Program -> Evaluator ()
 evaluateIt = mapM_ evaluate
 
+-- | Evalauates a single Freezy Expression
 evaluate :: Expr -> Evaluator FreezyValue
 evaluate (Unary op operand) = do
     operandRes <- evaluate operand
@@ -144,16 +152,19 @@ insertArgs argList args = do
 
 {- * Operators -}
 
+-- | perform a unary operation and do some rudimentary type checking
 performUnaryOp :: Token -> FreezyValue -> Evaluator FreezyValue
 performUnaryOp (Token BANG _ _) operand = return $ unaryNot operand
 performUnaryOp (Token MINUS _ _) (Number n)= return $ unaryMinus (Number n)
 performUnaryOp _ _ = throwError $ EvaluatorError "Strange Unary Operation" 0
 
+-- | dispatch a binary operation to either the numericOp handler or the polyOp handler
 performOp :: Token -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
 performOp op left right
      | t_type op `elem` [PLUS, MINUS, STAR, DASH, GR_EQ, LE_EQ, GR, LE] = numericOp (t_type op) left right
      | otherwise = polyOp (t_type op) left right
 
+-- | check the operand types and dispatch to one of the numerical binary operations
 numericOp :: TokenType -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
 numericOp op a@(Number _) b@(Number _)
   | op == PLUS = return $ plus a b
@@ -166,6 +177,7 @@ numericOp op a@(Number _) b@(Number _)
   | op == LE_EQ = return $ lesserEqual a b
 numericOp _ _ _ = throwError $ EvaluatorError "Expect Numbers" 0
 
+-- | dispatch to one of the polymorphic binary operations
 polyOp :: TokenType -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
 polyOp op a b
    | op == TILDE = return $ concatenate a b

@@ -128,6 +128,9 @@ data FreezyValue
     | Lambda Env [Token] [Expr]
     deriving (Show)
 
+-- |Provide an Eq instance for freezyvalues.
+--
+--  This will be used by the evalutor. Functions and Lambdas cannot be compared
 instance Eq FreezyValue where
     (Number a) == (Number b) = a == b
     (String a) == (String b) = a == b
