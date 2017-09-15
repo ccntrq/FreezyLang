@@ -9,7 +9,8 @@
   - [x] move to lib (renamed to FreezyMain
   - [x] add stupid main wrapper
 - [x] implement real shadowing (currently only function args can shadow)
-- [ ] add blocks
+- [x] add blocks
+   - [x] add block scope
 - [ ] improve error reporting
 - [ ] silence all warnings
 
