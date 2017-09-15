@@ -20,8 +20,9 @@ documentation in html format run
 cabal haddock
 ```
 
-Sadly there is a bug with the `--executables` option thus there is no
-documentation for `Freezy.hs` at the moment
+Sadly there is a bug with the `--executables` option thus I moved the
+'executable' to lib and added a stupid wrapper as the executable as a
+workaround
 
 ## Resources
 
