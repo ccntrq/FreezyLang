@@ -4,7 +4,11 @@
 
 - [x] add let bindings
 - [x] add named functions
-- [ ] implement all operators
+- [x] implement all operators
+- [ ] Documentation for Freezy
+  - [ ] move to lib
+  - [ ] add stupid main wrapper
+- [ ] implement real shadowing (currently only function args can shadow)
 - [ ] improve error reporting
 - [ ] silence all warnings
 
