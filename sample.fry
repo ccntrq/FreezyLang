@@ -1,2 +1,27 @@
-let a = print 4
+fun plus(a,b){
+    a + b
+}
+
+print plus(5,6)
+
+
+# pretty useless
+fun stringify(a){
+    a ~ ""
+}
+
+let a = stringify(plus(4,5))
+
 print a
+
+print 5
+
+print (2 > 1)
+print (2 >= 1)
+print (1 < 2)
+print (1 <= 2)
+print (2 != 1)
+print (1 + 1 == 2)
+print (!false)
+print (1-1 == 0)
+print (2*2 == 4)
