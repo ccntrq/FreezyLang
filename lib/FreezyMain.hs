@@ -1,5 +1,5 @@
 {-| Freezy Interpreter Main -}
-module Freezy where
+module FreezyMain where
 
 import FreezyLexer
 import FreezyParser
@@ -11,9 +11,9 @@ import System.Exit
 
 {-* MAIN -}
 
--- | The main
-main :: IO ()
-main = do
+-- | The command line entry point
+entry :: IO ()
+entry = do
     args <- getArgs
     dispatch args
 
