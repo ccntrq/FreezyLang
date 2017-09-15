@@ -71,9 +71,6 @@ evaluate (IfExpr condE thenE elseE) = do
 evaluate (Fn args body) = do
     env <- get
     return $ Function env args body
-evaluate (Fun name args body) = do
-    env <- get
-    assign (t_lexeme name) $ Function env args body
 evaluate (Call callee args) = do
     calleeRes <- evaluate callee
     argsRes <- mapM evaluate args

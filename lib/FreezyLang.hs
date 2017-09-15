@@ -85,8 +85,6 @@ data Expr
     | Call Expr [Expr]
     -- |Lambdas
     | Fn [Token] [Expr]
-    -- | Function Declarations evaluate to a callable instance of them self
-    | Fun Token [Token] [Expr]
     -- |Constant definition
     | Let Token Expr
     -- |Constant use
