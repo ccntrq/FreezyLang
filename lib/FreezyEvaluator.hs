@@ -78,7 +78,7 @@ evaluate (Binary left op right) = do
     leftRes <- evaluate left
     rightRes <- evaluate right
     performOp op leftRes rightRes
-evaluate (Literal token) = return $ litToVal token
+evaluate (Literal token) = litToVal token
 evaluate (IfExpr condE thenE elseE) = do
     condRes <- evaluate condE
     if isTruthy condRes
@@ -95,7 +95,7 @@ evaluate (Call callee args) = do
     calleeRes <- evaluate callee
     argsRes <- mapM evaluate args
     case calleeRes of
-        fn@(Lambda closure argList body) -> do
+        (Lambda closure argList body) -> do
             env <- get
             put (openScope closure)
             insertArgs argList argsRes
@@ -105,7 +105,7 @@ evaluate (Call callee args) = do
         fn@(Function name closure argList body) -> do
             env <- get
             put (openScope closure)
-            assign (t_lexeme name) fn -- allow recursion
+            _ <- assign (t_lexeme name) fn -- allow recursion
             insertArgs argList argsRes
             funRes <- evaluateBlock Nothing body
             put env -- reset the env
@@ -125,7 +125,6 @@ evaluate (Print expr) = do
     let stringified = stringify res
     liftIO $ putStrLn (stringified)
     return $ String stringified
-evaluate expr = throwError $ EvaluatorError ("cannot evaluate" ++ show expr) 0
 
 -- | Helper function to evaluate a function body/block expr
 evaluateBlock :: Maybe FreezyValue -> [Expr] -> Evaluator FreezyValue
@@ -133,7 +132,7 @@ evaluateBlock retVal [] = do
     case retVal of
         Nothing -> throwError $ EvaluatorError ("Empty blocks are not allowed") 0
         Just val -> return val
-evaluateBlock retVal (x:xs) = do
+evaluateBlock _ (x:xs) = do
   retVal' <- evaluate x
   evaluateBlock (Just retVal') xs
 
@@ -145,11 +144,12 @@ insertArgs argList args = do
 
 {- * Operators -}
 
-performUnaryOp :: Token-> FreezyValue -> Evaluator FreezyValue
+performUnaryOp :: Token -> FreezyValue -> Evaluator FreezyValue
 performUnaryOp (Token BANG _ _) operand = return $ unaryNot operand
 performUnaryOp (Token MINUS _ _) (Number n)= return $ unaryMinus (Number n)
 performUnaryOp _ _ = throwError $ EvaluatorError "Strange Unary Operation" 0
 
+performOp :: Token -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
 performOp op left right
      | t_type op `elem` [PLUS, MINUS, STAR, DASH, GR_EQ, LE_EQ, GR, LE] = numericOp (t_type op) left right
      | otherwise = polyOp (t_type op) left right
@@ -177,8 +177,10 @@ polyOp op a b
 {- * Helper Functions -}
 
 -- | Converts a literal token to its runtime representation
-litToVal :: Token -> FreezyValue
-litToVal (Token NUMBER lexeme _) = Number (read lexeme)
-litToVal (Token STRING lexeme _) = String lexeme
-litToVal (Token TRUE _ _)        = Boolean True
-litToVal (Token FALSE _ _)       = Boolean False
+litToVal :: Token -> Evaluator FreezyValue
+litToVal (Token NUMBER lexeme _) = return $ Number (read lexeme)
+litToVal (Token STRING lexeme _) = return $ String lexeme
+litToVal (Token TRUE _ _)        = return $ Boolean True
+litToVal (Token FALSE _ _)       = return $ Boolean False
+litToVal errT =
+    throwError $ EvaluatorError ("Not a Literal: " ++ show errT) (t_line errT)

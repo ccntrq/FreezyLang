@@ -76,13 +76,13 @@ runSource :: String -> IO ()
 runSource source = do
     let lexed = runLexer initState $ lexIt source
     case lexed of
-        (Right tokens, st)-> do
-            let parsed = runParser (initParserState tokens) parseIt
+        (Right toks, _) -> do
+            let parsed = runParser (initParserState toks) parseIt
             case parsed of
-                (Right prog, st) -> do
+                (Right prog, _) -> do
                     eval <- evalEvaluator globalEnv $ evaluateIt prog
                     case eval of
-                      Right res -> return ()
+                      Right _ -> return ()
                       Left err -> print err
-                (Left err, st) -> print err
-        (Left err, st)-> print err
+                (Left err, _) -> print err
+        (Left err, _)-> print err

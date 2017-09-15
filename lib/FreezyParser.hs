@@ -25,7 +25,8 @@ data ParserState = ParserState
     } deriving Show
 
 -- | Initiate the parse state with a list of tokens
-initParserState tokens = ParserState tokens []
+initParserState :: [Token] -> ParserState
+initParserState toks = ParserState toks []
 
 -- | Type for parser errors
 data ParserError = ParserError
@@ -46,7 +47,6 @@ parseIt = parseIt' []
             else do
                 expr <- expression
                 _ <- match [SEMICOLON] -- optional semicolon
-                st <- get
                 parseIt' $ acc ++ [expr]
 
 -- | Entry point to the recursive descent expression parser
@@ -85,9 +85,9 @@ ifExpr = do
     if matches
         then do
             cond <- expression
-            consume THEN "then expected"
+            _ <- consume THEN "then expected"
             thenExpr <- expression
-            consume ELSE "else expected"
+            _ <- consume ELSE "else expected"
             elseExpr <- expression
             return $ IfExpr cond thenExpr elseExpr
         else assignment
@@ -98,7 +98,7 @@ assignment = do
     if matches
         then do
             name <- consume IDENTIFIER "Expect variable name"
-            consume EQUAL "Expect equal"
+            _ <- consume EQUAL "Expect equal"
             val <- expression
             return $ Let name val
         else printExpr
@@ -122,8 +122,8 @@ call = do
         matches <- match [LPAR]
         if matches
             then do
-                call <- finishCall [] expr
-                finishCallLoop call
+                callRes <- finishCall [] expr
+                finishCallLoop callRes
             else return expr
     finishCall :: [Expr] -> Expr -> Parser Expr
     finishCall acc callee = do
@@ -136,7 +136,7 @@ call = do
              if matches'
                  then finishCall (acc ++ [arg]) callee
                  else do
-                     consume RPAR "expect closing Parentheses"
+                     _ <- consume RPAR "expect closing Parentheses"
                      return $ Call callee (acc ++ [arg])
 
 fun :: Parser Expr
@@ -174,7 +174,7 @@ finishFn name = do
                 _ <- match [COMMA] -- optional commas?
                 argParser (acc ++ [arg])
             else do
-                consume RPAR "Excpect closing parens"
+                _ <- consume RPAR "Excpect closing parens"
                 return acc
     bodyParser :: [Expr] -> Parser [Expr]
     bodyParser acc = do
@@ -189,20 +189,20 @@ primary = do
    cur <- peek
    case t_type cur of
        IDENTIFIER -> do
-           advance
+           _ <- advance
            return $ Const cur
        LPAR -> do
-           advance
+           _ <- advance
            expr <- expression
-           consume RPAR "Expect closing paren"
+           _ <- consume RPAR "Expect closing paren"
            return $ Grouping expr
        LBRACE -> do
-           advance
+           _ <- advance
            block []
        _ ->
            if isLitToken cur
               then do
-                  advance
+                  _ <- advance
                   return $ Literal cur
               else throwError $ ParserError ("Cannot parse " ++ show cur) (t_line cur)
   where
@@ -240,7 +240,7 @@ isAtEnd :: Parser Bool
 isAtEnd = do
     st <- get
     case tokens st of
-        ((Token EOF _ _)):xs -> return True
+        ((Token EOF _ _)):_ -> return True
         _ -> return False
 
 -- | advance the state by one token
@@ -265,7 +265,7 @@ match ttypes = do
     matches <- anyM check ttypes
     if matches
         then do
-            advance
+            _ <- advance
             return True
         else return False
 
@@ -294,7 +294,7 @@ peek :: Parser Token
 peek = do
     st <- get
     case tokens st of
-        (x:xs) -> return x
+        (x:_) -> return x
         _ -> do
             prev <- previous
             throwError $ ParserError "Out of tokens" (t_line prev)
@@ -304,5 +304,5 @@ previous :: Parser Token
 previous = do
     st <- get
     case previousTokens st of
-        (x:xs) -> return x
+        (x:_) -> return x
         _ -> throwError $ ParserError "No previous token" 0
