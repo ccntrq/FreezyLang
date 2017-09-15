@@ -1,0 +1,38 @@
+fun modulo(m,n){
+    m-(m/n*n)
+}
+print "modulo 0123"
+print modulo(4,2)
+print modulo(4,3)
+print modulo(5,3)
+print modulo(7,4)
+
+fun even(n){
+   modulo(n,2) == 0
+}
+
+
+fun decToBin(n){
+    fun _decToBin(acc,n){
+        if n == 0
+            then acc
+            else {
+               let newAcc = if even(n) then 0 ~ acc else 1 ~ acc
+               _decToBin(newAcc,n/2)
+           }
+    }
+    _decToBin("",n)
+}
+
+
+fun loop(loopFn, n){
+    if (n == 0 )
+        then loopFn(n)
+        else {
+            loopFn(n)
+            loop(loopFn,(n-1))
+        }
+}
+
+print "binary numbers 20..0"
+loop(fn(a){print decToBin(a)},  20)

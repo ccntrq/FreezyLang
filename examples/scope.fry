@@ -1,0 +1,20 @@
+let a = 14
+
+{
+    let a = 15
+    print a
+}
+print a
+
+
+
+fun mkPlus10(){
+    let a = 10
+    fun inner (n){
+        a + n
+    }
+}
+
+let plus10 = mkPlus10()
+
+print plus10(5)
