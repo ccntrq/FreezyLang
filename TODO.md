@@ -5,9 +5,9 @@
 - [x] add let bindings
 - [x] add named functions
 - [x] implement all operators
-- [ ] Documentation for Freezy
-  - [ ] move to lib
-  - [ ] add stupid main wrapper
+- [x] Documentation for Freezy
+  - [x] move to lib (renamed to FreezyMain
+  - [x] add stupid main wrapper
 - [ ] implement real shadowing (currently only function args can shadow)
 - [ ] improve error reporting
 - [ ] silence all warnings
