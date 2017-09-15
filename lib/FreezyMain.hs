@@ -80,9 +80,9 @@ runSource source = do
             let parsed = runParser (initParserState tokens) parseIt
             case parsed of
                 (Right prog, st) -> do
-                    eval <- runEvaluator globalEnv $ evaluateIt prog
+                    eval <- evalEvaluator globalEnv $ evaluateIt prog
                     case eval of
-                      Right res -> print res
+                      Right res -> return ()
                       Left err -> print err
                 (Left err, st) -> print err
         (Left err, st)-> print err

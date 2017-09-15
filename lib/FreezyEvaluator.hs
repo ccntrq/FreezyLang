@@ -56,6 +56,9 @@ type Evaluator a = StateT Env (ExceptT EvaluatorError IO) a
 runEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError (a, Env))
 runEvaluator env ev = runExceptT $ runStateT ev env
 
+evalEvaluator :: Env -> Evaluator a -> IO (Either EvaluatorError a)
+evalEvaluator env ev = runExceptT $ evalStateT ev env
+
 -- | Type for Evaluator errors
 data EvaluatorError = EvaluatorError
     { reason :: String
