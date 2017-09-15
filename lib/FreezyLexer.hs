@@ -27,7 +27,7 @@ data LexerState = LexerState { line :: Int } deriving (Show)
 
 -- | initial state constructor
 initState :: LexerState
-initState = LexerState 0
+initState = LexerState 1
 
 -- | increments the line in the lexer state
 incLine :: Lexer ()
