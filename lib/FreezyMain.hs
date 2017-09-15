@@ -29,7 +29,7 @@ dispatch files =
 
 -- | print the version
 version :: IO ()
-version = putStrLn "Freezy v0.0.7"
+version = putStrLn "Freezy v0.1.0"
 
 -- | print version and usage
 usage :: IO ()

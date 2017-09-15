@@ -1,5 +1,5 @@
 name:                Freezy
-version:             0.0.7
+version:             0.1.0
 synopsis:            A simple interpreted programming language implemented in 
                      Haskell.
 homepage:            https://github.com/ccntrq/Freezy#readme

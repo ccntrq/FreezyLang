@@ -12,12 +12,14 @@
 - [x] add blocks
    - [x] add block scope
 - [x] silence all warnings
-- [ ] improve error reporting
+- [-] improve error reporting (only slight improvements)
 
 ## v0.x.0
 
 - [ ] add lists
 - [ ] add logic operators
+- [ ] improve error reporting (especially in the evaluator)
+- [ ] add some tests
 
 ## ideas
 
