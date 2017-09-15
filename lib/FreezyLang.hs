@@ -85,6 +85,8 @@ data Expr
     | Call Expr [Expr]
     -- |Lambdas
     | Fn [Token] [Expr]
+    -- |Named functions
+    | Fun Token [Token] [Expr]
     -- |Constant definition
     | Let Token Expr
     -- |Constant use
@@ -102,10 +104,13 @@ data Expr
 --   * the input to the main interpreter
 type Program = [Expr]
 
--- | a simple Environment for the Evaluator.
+-- | the environment for the Evaluator.
 --
---   * this goes here because we store a closure (Env) in Function Values.
-type Env = M.Map String FreezyValue
+--   * this goes here because we store a closure of this type in Function Values.
+data Env = Env
+    { enclosing :: Maybe Env
+    , scope :: M.Map String FreezyValue
+    } deriving (Show)
 
 -- |Freezy Runtime Values
 data FreezyValue
@@ -116,7 +121,9 @@ data FreezyValue
     -- |Boolean
     | Boolean Bool
     -- |Functions
-    | Function Env [Token] [Expr]
+    | Function Token Env [Token] [Expr]
+    -- |Lamdbas
+    | Lambda Env [Token] [Expr]
     deriving (Show)
 
 instance Eq FreezyValue where

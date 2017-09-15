@@ -145,24 +145,25 @@ fun = do
     if matches
         then do
             name <- consume IDENTIFIER "Expect Function name. Use fn instead"
-            fn <- finishFn
-            return $ Let name fn
+            finishFn (Just name)
         else fn
 
 fn :: Parser Expr
 fn = do
     matches <- match [FN]
     if matches
-        then finishFn
+        then finishFn Nothing
         else primary
 
-finishFn :: Parser Expr
-finishFn = do
+finishFn :: Maybe Token -> Parser Expr
+finishFn name = do
     _ <- consume LPAR "Expect opening parentheses"
     args <- argParser []
     _ <- consume LBRACE "Expect opening brace"
     body <- bodyParser []
-    return $ Fn args body
+    case name of
+      Just n -> return $ Fun n args body
+      Nothing -> return $ Fn args body
   where
     argParser :: [Token] -> Parser [Token]
     argParser acc = do

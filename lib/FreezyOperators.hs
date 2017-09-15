@@ -55,7 +55,8 @@ stringify :: FreezyValue -> String
 stringify (String s) = s
 stringify (Number n) = show n
 stringify (Boolean n) = show n
-stringify (Function _ _ _) = "__^__" -- meh
+stringify (Function name _ _ _) = "__fun " ++ (t_lexeme name) ++ "__" -- meh
+stringify (Lambda _ _ _) = "__anon__" -- meh
 
 -- | Checks wether a given FreezyValue is truthy. In Freezy everything besides
 --   '0' and 'false' is considered to be truthy

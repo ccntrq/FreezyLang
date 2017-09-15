@@ -16,24 +16,36 @@ import Prelude hiding (lookup)
 
 -- | Constructor for the global environment
 globalEnv :: Env
-globalEnv = M.empty
+globalEnv = Env Nothing M.empty
+
+-- | Opens a new environment inside of env
+openScope :: Env -> Env
+openScope env = Env (Just env) M.empty
+
 
 -- | Assignment. This doesn't allow mutation.
 assign :: String -> FreezyValue -> Evaluator FreezyValue
 assign name value = do
     env <- get
-    case M.lookup name env of
-          Just _ -> throwError $ EvaluatorError ("already assigned" ++ name) 0
-          Nothing -> do
-              put $ M.insert name value env
-              return value
+    case M.lookup name (scope env) of
+        Just _ -> throwError $ EvaluatorError ("already assigned" ++ name) 0
+        Nothing -> do
+            put $ env { scope = M.insert name value (scope env)}
+            return value
 
 lookup :: String -> Evaluator FreezyValue
 lookup name = do
     env <- get
-    case M.lookup name env of
-          Just x -> return x
-          Nothing -> throwError $ EvaluatorError ("Cannot find in env: " ++ name) 0
+    lookup' name env
+  where
+    lookup' :: String -> Env -> Evaluator FreezyValue
+    lookup' n e =
+        case M.lookup n (scope e) of
+            Just x -> return x
+            Nothing ->
+                case enclosing e of
+                   Just enc -> lookup' n enc
+                   Nothing -> throwError $ EvaluatorError ("Cannot find in env: " ++ name) 0
 
 {- ** Evaluator Stack -}
 
@@ -71,14 +83,27 @@ evaluate (IfExpr condE thenE elseE) = do
         else evaluate elseE
 evaluate (Fn args body) = do
     env <- get
-    return $ Function env args body
+    return $ Lambda env args body
+evaluate (Fun name args body) = do
+    env <- get
+    let fn = Function name env args body
+    assign (t_lexeme name) fn
 evaluate (Call callee args) = do
     calleeRes <- evaluate callee
     argsRes <- mapM evaluate args
     case calleeRes of
-        (Function closure argList body) -> do
+        fn@(Lambda closure argList body) -> do
             env <- get
-            put (insertArgs argList argsRes closure)
+            put (openScope closure)
+            insertArgs argList argsRes
+            funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
+            put env -- reset the env
+            return funRes
+        fn@(Function name closure argList body) -> do
+            env <- get
+            put (openScope closure)
+            assign (t_lexeme name) fn -- allow recursion
+            insertArgs argList argsRes
             funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
             put env -- reset the env
             return funRes
@@ -101,13 +126,10 @@ evaluateBody retVal (x:xs) = do
   evaluateBody retVal' xs
 
 -- | Helper function to put the arguments in the environment
-insertArgs :: [Token] -> [FreezyValue] -> Env -> Env
-insertArgs argList args env =
-    let zipped = zip argList args
-    in foldl insertFn env zipped
-  -- don't use assign here. it will break the whaky shadowing
-  where insertFn acc (k, v) = M.insert (t_lexeme k) v acc
-
+insertArgs :: [Token] -> [FreezyValue] -> Evaluator ()
+insertArgs argList args = do
+    let zipped = zip (map t_lexeme argList) args
+    mapM_ (uncurry assign) zipped
 
 {- * Operators -}
 
