@@ -2,13 +2,13 @@
 
 A simple interpreted programming language implemented in Haskell.
 
-
 ## Build
 
 `cabal` is used to install the dependencies and build the interpreter
 
 ```bash
 cabal install
+cabal build
 ```
 
 ## Documentation
