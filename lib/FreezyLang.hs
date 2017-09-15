@@ -118,3 +118,10 @@ data FreezyValue
     -- |Functions
     | Function Env [Token] [Expr]
     deriving (Show)
+
+instance Eq FreezyValue where
+    (Number a) == (Number b) = a == b
+    (String a) == (String b) = a == b
+    (Boolean a) == (Boolean b) = a == b
+    _ == _ = False -- cannot compare functions
+

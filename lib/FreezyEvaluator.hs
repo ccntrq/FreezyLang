@@ -2,6 +2,7 @@
 module FreezyEvaluator where
 
 import FreezyLang
+import FreezyOperators
 
 import Control.Monad.Except
 import Control.Monad.State
@@ -88,7 +89,7 @@ evaluate (Grouping expr) = evaluate expr
 evaluate (Print expr) = do
     res <- evaluate expr
     let stringified = stringify res
-    liftIO $ print (stringified)
+    liftIO $ putStrLn (stringified)
     return $ String stringified
 evaluate expr = throwError $ EvaluatorError ("cannot evaluate" ++ show expr) 0
 
@@ -107,36 +108,36 @@ insertArgs argList args env =
   -- don't use assign here. it will break the whaky shadowing
   where insertFn acc (k, v) = M.insert (t_lexeme k) v acc
 
--- | Stringifications for FreezyValues. Currently this just wraps 'show'
-stringify :: FreezyValue -> String
-stringify = show
-
--- | Checks wether a given FreezyValue is truthy. In Freezy everything besides
---   '0' and 'false' is considered to be truthy
-isTruthy :: FreezyValue -> Bool
-isTruthy (Number 0)      = False
-isTruthy (Boolean False) = False
-isTruthy _               = True
 
 {- * Operators -}
 
 performUnaryOp :: Token-> FreezyValue -> Evaluator FreezyValue
-performUnaryOp (Token BANG _ _) operand = return $ Boolean (isTruthy operand)
-performUnaryOp (Token MINUS _ _) (Number n)= return $ Number (-n)
+performUnaryOp (Token BANG _ _) operand = return $ unaryNot operand
+performUnaryOp (Token MINUS _ _) (Number n)= return $ unaryMinus (Number n)
 performUnaryOp _ _ = throwError $ EvaluatorError "Strange Unary Operation" 0
 
-
 performOp op left right
-     | t_type op `elem` [PLUS, MINUS, STAR, DASH] = numericOp (t_type op) left right
+     | t_type op `elem` [PLUS, MINUS, STAR, DASH, GR_EQ, LE_EQ, GR, LE] = numericOp (t_type op) left right
+     | otherwise = polyOp (t_type op) left right
 
 numericOp :: TokenType -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
-numericOp op (Number a) (Number b)
-  | op == PLUS = return $ Number (a + b)
-  | op == MINUS = return $ Number (a - b)
-  | op == STAR = return $ Number (a * b)
-  | op == DASH = return $ Number (a `div` b)
+numericOp op a@(Number _) b@(Number _)
+  | op == PLUS = return $ plus a b
+  | op == MINUS = return $ minus a b
+  | op == STAR = return $ times a b
+  | op == DASH = return $ division a b
+  | op == GR = return $ greater a b
+  | op == GR_EQ = return $ greaterEqual a b
+  | op == LE = return $ lesser a b
+  | op == LE_EQ = return $ lesserEqual a b
 numericOp _ _ _ = throwError $ EvaluatorError "Expect Numbers" 0
 
+polyOp :: TokenType -> FreezyValue -> FreezyValue -> Evaluator FreezyValue
+polyOp op a b
+   | op == TILDE = return $ concatenate a b
+   | op == EQ_EQ = return $ equal a b
+   | op == BANG_EQ = return $ notEqual a b
+   | otherwise = throwError $ EvaluatorError "How did we get here?" 0
 
 
 {- * Helper Functions -}
