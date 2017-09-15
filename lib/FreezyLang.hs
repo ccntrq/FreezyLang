@@ -93,6 +93,8 @@ data Expr
     | Const Token
     -- |Groupings
     | Grouping Expr
+    -- |Blocks
+    | Block [Expr]
     -- |evaluates to the printed string
     | Print Expr
     deriving (Show)

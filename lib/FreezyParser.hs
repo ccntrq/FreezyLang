@@ -196,6 +196,9 @@ primary = do
            expr <- expression
            consume RPAR "Expect closing paren"
            return $ Grouping expr
+       LBRACE -> do
+           advance
+           block []
        _ ->
            if isLitToken cur
               then do
@@ -204,6 +207,15 @@ primary = do
               else throwError $ ParserError ("Cannot parse " ++ show cur) (t_line cur)
   where
     isLitToken cur = t_type cur `elem` [TRUE, FALSE, STRING, NUMBER]
+
+block :: [Expr] -> Parser Expr
+block acc = do
+    matches <- match [RBRACE]
+    if matches
+        then return $ Block (reverse acc)
+        else do
+            expr <- expression
+            block (expr:acc)
 
 -- | generate a Binary parser for the given operators
 binaryParser :: Parser Expr -> [TokenType] -> Parser Expr

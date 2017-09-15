@@ -96,7 +96,7 @@ evaluate (Call callee args) = do
             env <- get
             put (openScope closure)
             insertArgs argList argsRes
-            funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
+            funRes <- evaluateBlock Nothing body
             put env -- reset the env
             return funRes
         fn@(Function name closure argList body) -> do
@@ -104,13 +104,14 @@ evaluate (Call callee args) = do
             put (openScope closure)
             assign (t_lexeme name) fn -- allow recursion
             insertArgs argList argsRes
-            funRes <- evaluateBody calleeRes body -- urgh... we shouldn't pass the calleeRes here
+            funRes <- evaluateBlock Nothing body
             put env -- reset the env
             return funRes
         _ -> throwError $ EvaluatorError "can only call functions" 0
 evaluate (Let token expr) = evaluate expr >>= (assign (t_lexeme token))
 evaluate (Const token) = lookup (t_lexeme token)
 evaluate (Grouping expr) = evaluate expr
+evaluate (Block exprs) = evaluateBlock Nothing exprs
 evaluate (Print expr) = do
     res <- evaluate expr
     let stringified = stringify res
@@ -118,12 +119,15 @@ evaluate (Print expr) = do
     return $ String stringified
 evaluate expr = throwError $ EvaluatorError ("cannot evaluate" ++ show expr) 0
 
--- | Helper function to evaluate a function body
-evaluateBody :: FreezyValue -> [Expr] -> Evaluator FreezyValue
-evaluateBody retVal [] = return retVal
-evaluateBody retVal (x:xs) = do
+-- | Helper function to evaluate a function body/block expr
+evaluateBlock :: Maybe FreezyValue -> [Expr] -> Evaluator FreezyValue
+evaluateBlock retVal [] = do
+    case retVal of
+        Nothing -> throwError $ EvaluatorError ("Empty blocks are not allowed") 0
+        Just val -> return val
+evaluateBlock retVal (x:xs) = do
   retVal' <- evaluate x
-  evaluateBody retVal' xs
+  evaluateBlock (Just retVal') xs
 
 -- | Helper function to put the arguments in the environment
 insertArgs :: [Token] -> [FreezyValue] -> Evaluator ()
